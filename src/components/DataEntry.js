@@ -124,6 +124,7 @@ const DataEntry = ({ onSubmit }) => {
               onChange={handleChange}
               margin="normal"
               required
+              helperText="Use a public image URL. Private GitHub image URLs may not display correctly."
             />
 
             {/* Skills and Interests */}
@@ -199,6 +200,7 @@ const DataEntry = ({ onSubmit }) => {
                   onChange={(e) => handleChange(e, index, 'projects', 'image')}
                   margin="normal"
                   required
+                  helperText="Use a public image URL. Private GitHub image URLs may not display correctly."
                 />
                 <TextField
                   fullWidth

@@ -16,16 +16,21 @@ const App = () => {
   const [projects, setProjects] = useState([]);
 
   const handleDataSubmit = (data) => {
+    // Store the original data
     setPortfolioData(data);
-    // Add unique IDs to projects for drag and drop functionality
+    
+    // Ensure all projects have unique IDs before setting state
     const projectsWithIds = (data.projects || []).map((project, index) => ({
       ...project,
       id: `project-${index}`
     }));
+    
     setProjects(projectsWithIds);
+    console.log("Projects with IDs:", projectsWithIds);
   };
 
   const handleProjectReorder = (reorderedProjects) => {
+    console.log("Reordering projects:", reorderedProjects);
     setProjects(reorderedProjects);
   };
 
@@ -56,7 +61,10 @@ const App = () => {
         skills={portfolioData.skills}
         interests={portfolioData.interests}
       />
-      <Projects projects={projects} onReorder={handleProjectReorder} />
+      <Projects 
+        projects={projects} 
+        onReorder={handleProjectReorder} 
+      />
       <Contact socialMedia={portfolioData.socialMedia || []} />
       <Footer socialMedia={portfolioData.socialMedia || []} />
       <DarkModeToggle darkMode={darkMode} onToggle={toggleDarkMode} />

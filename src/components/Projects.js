@@ -1,91 +1,114 @@
-import React from 'react';
-import { Container, Typography, Box } from '@mui/material';
+import React, { useState } from 'react';
+import { Container, Typography, Box, Grid, Button } from '@mui/material';
 import ProjectCard from './ProjectCard';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import ReorderIcon from '@mui/icons-material/Reorder';
 
 const Projects = ({ projects, onReorder }) => {
+  const [isDraggable, setIsDraggable] = useState(false);
+
   const handleDragEnd = (result) => {
     if (!result.destination) return;
 
-    const newProjects = Array.from(projects);
-    const [movedProject] = newProjects.splice(result.source.index, 1);
-    newProjects.splice(result.destination.index, 0, movedProject);
-    
-    onReorder(newProjects);
+    const items = Array.from(projects);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    onReorder(items);
   };
 
-  // Add validation for project IDs
-  const hasInvalidProjects = projects.some(project => 
-    !project.id && project.id !== 0
-  );
+  const toggleDraggable = () => {
+    setIsDraggable(!isDraggable);
+  };
 
-  if (hasInvalidProjects) {
-    console.error('Projects contain invalid IDs:', projects);
-    return null;
-  }
+  // Ensure all projects have an ID
+  const projectsWithIds = projects.map((project, index) => ({
+    ...project,
+    id: project.id || `project-${index}`
+  }));
 
   return (
     <Box sx={{ py: 8, backgroundColor: 'background.default' }}>
       <Container maxWidth="lg">
-        <Typography variant="h2" gutterBottom sx={{ mb: 6, textAlign: 'center' }}>
+        <Typography variant="h2" gutterBottom sx={{ mb: 2, textAlign: 'center' }}>
           My Projects
         </Typography>
 
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="projects" direction="vertical">
-            {(provided) => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                  gap: '32px',
-                  padding: '8px'
-                }}
-              >
-                {projects.map((project, index) => {
-                  if (!project.id && project.id !== 0) {
-                    console.error('Project missing ID:', project);
-                    return null;
-                  }
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+          <Button 
+            variant="outlined" 
+            startIcon={<ReorderIcon />}
+            onClick={toggleDraggable}
+            color="primary"
+            sx={{ mb: 3 }}
+          >
+            {isDraggable ? 'Save Order' : 'Reorder Projects'}
+          </Button>
+        </Box>
 
-                  return (
+        {isDraggable ? (
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="projects">
+              {(provided) => (
+                <Grid
+                  container
+                  spacing={4}
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                >
+                  {projectsWithIds.map((project, index) => (
                     <Draggable
                       key={project.id}
-                      draggableId={String(project.id)}
+                      draggableId={project.id}
                       index={index}
                     >
                       {(provided, snapshot) => (
-                        <div
+                        <Grid
+                          item
+                          xs={12}
+                          md={6}
+                          lg={4}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
-                          style={{
-                            ...provided.draggableProps.style,
-                            cursor: snapshot.isDragging ? 'grabbing' : 'grab',
-                            zIndex: snapshot.isDragging ? 1000 : 1,
-                          }}
+                          {...provided.dragHandleProps}
                         >
-                          <div {...provided.dragHandleProps} style={{ height: '100%' }}>
-                            <ProjectCard
-                              {...project}
-                              isDragging={snapshot.isDragging}
-                              style={{
-                                transform: snapshot.isDragging ? 'rotate(3deg)' : 'none',
-                                transition: 'transform 0.2s ease',
-                              }}
-                            />
-                          </div>
-                        </div>
+                          <ProjectCard
+                            title={project.title}
+                            description={project.description}
+                            image={project.image}
+                            githubLink={project.githubLink}
+                            isDragging={snapshot.isDragging}
+                          />
+                        </Grid>
                       )}
                     </Draggable>
-                  );
-                })}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+                  ))}
+                  {provided.placeholder}
+                </Grid>
+              )}
+            </Droppable>
+          </DragDropContext>
+        ) : (
+          <Grid container spacing={4}>
+            {projectsWithIds.map((project, index) => (
+              <Grid 
+                item 
+                xs={12} 
+                md={6} 
+                lg={4} 
+                key={project.id}
+              >
+                <ProjectCard
+                  title={project.title}
+                  description={project.description}
+                  image={project.image}
+                  githubLink={project.githubLink}
+                  isDragging={false}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        )}
       </Container>
     </Box>
   );

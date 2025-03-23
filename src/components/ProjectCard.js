@@ -1,11 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardMedia, Typography, Button, Box } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import ImageIcon from '@mui/icons-material/Image';
 
 const ProjectCard = ({ title, description, image, githubLink, isDragging }) => {
+  const [imageError, setImageError] = useState(false);
+
+  // Handle image loading errors
+  const handleImageError = () => {
+    console.log("Image failed to load:", image);
+    setImageError(true);
+  };
+
+  // Check if the URL is a GitHub private image URL with JWT token
+  const isPrivateGithubUrl = image && (
+    image.includes('private-user-images.githubusercontent.com') || 
+    image.includes('?jwt=') ||
+    image.includes('X-Amz-Signature')
+  );
+
+  // Default placeholder image if no image provided or on error
+  const placeholderImage = `https://via.placeholder.com/400x200?text=${encodeURIComponent(title || 'Project Image')}`;
+  
+  // Use placeholder if it's a private GitHub URL that likely won't work
+  const imageToUse = isPrivateGithubUrl ? placeholderImage : (image || placeholderImage);
+
   return (
-    
     <Card
       sx={{
         height: '100%',
@@ -23,7 +44,6 @@ const ProjectCard = ({ title, description, image, githubLink, isDragging }) => {
         borderColor: 'primary.main',
       }}
     >
-      {console.log(image)}
       <Box sx={{ 
         position: 'absolute', 
         top: 0, 
@@ -33,23 +53,49 @@ const ProjectCard = ({ title, description, image, githubLink, isDragging }) => {
         display: 'flex', 
         justifyContent: 'center',
         backgroundColor: 'rgba(0,0,0,0.05)',
-        color: 'text.secondary'
+        color: 'text.secondary',
+        zIndex: 1
       }}>
         <DragIndicatorIcon /> <Typography variant="caption" sx={{ ml: 1 }}>Drag to reorder</Typography>
       </Box>
       
-      <CardMedia
-        component="img"
-        height="200"
-        image={image}
-        alt={title}
-        sx={{
-          objectFit: 'cover',
-          borderTopLeftRadius: '8px',
-          borderTopRightRadius: '8px',
-          mt: 4
-        }}
-      />
+      {imageError ? (
+        <Box
+          sx={{
+            height: 200,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'grey.100',
+            color: 'text.secondary',
+            mt: 4,
+            padding: 2
+          }}
+        >
+          <ImageIcon sx={{ fontSize: 48, opacity: 0.6, mb: 1 }} />
+          <Typography variant="caption" align="center">
+            {isPrivateGithubUrl ? 
+              "Private GitHub images can't be displayed directly" : 
+              "Image could not be loaded"}
+          </Typography>
+        </Box>
+      ) : (
+        <CardMedia
+          component="img"
+          height="200"
+          image={imageToUse}
+          alt={title}
+          onError={handleImageError}
+          sx={{
+            objectFit: 'cover',
+            borderTopLeftRadius: '8px',
+            borderTopRightRadius: '8px',
+            mt: 4
+          }}
+        />
+      )}
+      
       <CardContent sx={{ flexGrow: 1, p: 3 }}>
         <Typography
           variant="h5"

@@ -1,8 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, Box, Typography, Avatar } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 
 const Hero = ({ name, bio, profilePicture }) => {
+  const [imageError, setImageError] = useState(false);
+
+  // Handle image loading errors
+  const handleImageError = () => {
+    console.log("Profile image failed to load:", profilePicture);
+    setImageError(true);
+  };
+
+  // Check if the URL is a GitHub private image URL with JWT token
+  const isPrivateGithubUrl = profilePicture && (
+    profilePicture.includes('private-user-images.githubusercontent.com') || 
+    profilePicture.includes('?jwt=') ||
+    profilePicture.includes('X-Amz-Signature')
+  );
+
+  // Default placeholder image
+  const placeholderImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'User')}&background=random&size=300`;
+
+  // Use placeholder if it's a private GitHub URL that likely won't work
+  const imageToUse = isPrivateGithubUrl ? placeholderImage : (profilePicture || placeholderImage);
+
   return (
     <Box
       sx={{
@@ -22,21 +43,7 @@ const Hero = ({ name, bio, profilePicture }) => {
             gap: 4,
           }}
         >
-          {/* <Avatar
-            src={profilePicture}
-            alt={name}
-            sx={{
-              width: { xs: 200, md: 300 },
-              height: { xs: 200, md: 300 },
-              border: '4px solid',
-              borderColor: 'primary.main',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-              fontSize: '5rem',
-              bgcolor: 'primary.light',
-            }}
-          >
-            <PersonIcon sx={{ fontSize: '5rem' }} />
-          </Avatar> */}
+
           <Box sx={{ flex: 1, textAlign: { xs: 'center', md: 'left' } }}>
             <Typography
               variant="h1"
